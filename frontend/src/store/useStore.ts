@@ -14,6 +14,7 @@ interface AppState {
   todos: Todo[];
   filters: Filters;
   loading: boolean;
+  authLoading: boolean;
   error: string | null;
 
   login: (username: string, password: string) => Promise<void>;
@@ -32,11 +33,14 @@ interface AppState {
   setPriority: (priority: number | null) => void;
 }
 
+let abortController: AbortController | null = null;
+
 export const useStore = create<AppState>()((set, get) => ({
   user: null,
   todos: [],
   filters: { search: '', category: '', priority: null },
   loading: false,
+  authLoading: true,
   error: null,
 
   login: async (username, password) => {
@@ -69,28 +73,35 @@ export const useStore = create<AppState>()((set, get) => ({
   checkAuth: async () => {
     try {
       const user = await authApi.getMe();
-      set({ user });
+      set({ user, authLoading: false });
     } catch {
-      set({ user: null });
+      set({ user: null, authLoading: false });
     }
   },
 
   fetchTodos: async () => {
+    if (abortController) {
+      abortController.abort();
+    }
+    abortController = new AbortController();
+
     const { filters } = get();
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       const todos = await todoApi.fetchTodos({
         category: filters.category || undefined,
         priority: filters.priority ?? undefined,
         search: filters.search || undefined,
-      });
-      set({ todos, loading: false });
+      }, abortController.signal);
+      set({ todos });
     } catch (e) {
-      set({ error: (e as Error).message, loading: false });
+      if ((e as Error).name === 'AbortError') return;
+      set({ error: (e as Error).message });
     }
   },
 
   createTodo: async (data) => {
+    set({ error: null });
     try {
       await todoApi.createTodo(data);
       await get().fetchTodos();
@@ -101,6 +112,7 @@ export const useStore = create<AppState>()((set, get) => ({
 
   updateTodo: async (id, data) => {
     const prevTodos = get().todos;
+    set({ error: null });
     try {
       const updated = await todoApi.updateTodo(id, data);
       set({ todos: get().todos.map((t) => (t.id === id ? updated : t)) });
@@ -110,6 +122,7 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   deleteTodo: async (id) => {
+    set({ error: null });
     try {
       await todoApi.deleteTodo(id);
       set({ todos: get().todos.filter((t) => t.id !== id) });

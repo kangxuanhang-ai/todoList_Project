@@ -25,15 +25,19 @@ export default function TodoItem({ todo, onEdit }: Props) {
       display: 'flex', alignItems: 'center', gap: 12, padding: '0 12px', height: 52,
       background: '#fff', borderRadius: 8, border: '1px solid #F3F4F6',
     }}>
-      <span {...attributes} {...listeners} style={{ cursor: 'grab', fontSize: 18, color: '#9CA3AF' }}>☰</span>
+      <span {...attributes} {...listeners} style={{ cursor: 'grab', fontSize: 18, color: '#9CA3AF' }} role="button" aria-label="Drag to reorder">☰</span>
       <input
         type="checkbox"
         checked={todo.completed}
         onChange={() => updateTodo(todo.id, { completed: !todo.completed })}
         style={{ width: 20, height: 20, cursor: 'pointer' }}
+        aria-label={`Mark "${todo.title}" as ${todo.completed ? 'incomplete' : 'complete'}`}
       />
       <span
         onClick={() => onEdit(todo)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onEdit(todo); }}
         style={{
           flex: 1, fontSize: 14, cursor: 'pointer',
           color: todo.completed ? '#9CA3AF' : '#1F2937',
@@ -51,9 +55,13 @@ export default function TodoItem({ todo, onEdit }: Props) {
       {todo.due_date && (
         <span style={{ fontSize: 12, color: '#6B7280' }}>{todo.due_date}</span>
       )}
-      <button onClick={() => deleteTodo(todo.id)} style={{
-        background: 'none', border: 'none', fontSize: 16, color: '#9CA3AF', cursor: 'pointer',
-      }}>✕</button>
+      <button
+        onClick={() => { if (window.confirm('Delete this todo?')) deleteTodo(todo.id); }}
+        aria-label={`Delete "${todo.title}"`}
+        style={{
+          background: 'none', border: 'none', fontSize: 16, color: '#9CA3AF', cursor: 'pointer',
+        }}
+      >✕</button>
     </div>
   );
 }

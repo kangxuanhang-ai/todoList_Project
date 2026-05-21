@@ -12,4 +12,18 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    sourcemap: false,
+    chunkSizeWarningLimit: 300,
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          if (id.includes('node_modules/react')) return 'vendor';
+          if (id.includes('node_modules/@dnd-kit')) return 'dnd';
+          if (id.includes('node_modules/zustand')) return 'state';
+          if (id.includes('node_modules')) return 'vendor';
+        },
+      },
+    },
+  },
 })

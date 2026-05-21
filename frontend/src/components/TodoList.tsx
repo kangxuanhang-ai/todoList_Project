@@ -8,7 +8,7 @@ import TodoItem from './TodoItem';
 import TodoEditModal from './TodoEditModal';
 
 export default function TodoList() {
-  const { todos, reorderTodos, loading } = useStore();
+  const { todos, reorderTodos } = useStore();
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -27,7 +27,6 @@ export default function TodoList() {
     reorderTodos(items);
   };
 
-  if (loading) return <p style={{ textAlign: 'center', color: '#6B7280' }}>Loading...</p>;
   if (todos.length === 0) return <p style={{ textAlign: 'center', color: '#6B7280', marginTop: 40 }}>No todos yet. Add one above!</p>;
 
   return (

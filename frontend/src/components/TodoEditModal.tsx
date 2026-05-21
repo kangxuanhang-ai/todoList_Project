@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { Todo } from '../types';
 import { useStore } from '../store/useStore';
 
@@ -14,8 +15,23 @@ export default function TodoEditModal({ todo, onClose }: Props) {
   const [priority, setPriority] = useState(todo.priority);
   const [category, setCategory] = useState(todo.category);
   const [dueDate, setDueDate] = useState(todo.due_date || '');
+  const [saving, setSaving] = useState(false);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    firstInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   const handleSave = async () => {
+    setSaving(true);
     await updateTodo(todo.id, {
       title: title || undefined,
       description: description || null,
@@ -23,20 +39,26 @@ export default function TodoEditModal({ todo, onClose }: Props) {
       category: category || undefined,
       due_date: dueDate || null,
     });
+    setSaving(false);
     onClose();
   };
 
-  return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
-    }} onClick={onClose}>
+  return createPortal(
+    <div
+      style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+      }}
+      onClick={onClose}
+      role="dialog"
+      aria-label="Edit todo"
+    >
       <div style={{
         background: '#fff', borderRadius: 12, padding: 32, width: 400,
         display: 'flex', flexDirection: 'column', gap: 16,
       }} onClick={(e) => e.stopPropagation()}>
         <h2 style={{ margin: 0, fontSize: 20, color: '#1F2937' }}>Edit Todo</h2>
-        <input value={title} onChange={(e) => setTitle(e.target.value)}
+        <input ref={firstInputRef} value={title} onChange={(e) => setTitle(e.target.value)}
           style={{ height: 44, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14 }} />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description"
           style={{ padding: 12, border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, minHeight: 80, resize: 'vertical' }} />
@@ -53,9 +75,12 @@ export default function TodoEditModal({ todo, onClose }: Props) {
           style={{ height: 44, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14 }} />
         <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ height: 40, padding: '0 20px', border: '1px solid #E5E7EB', borderRadius: 8, background: '#fff', cursor: 'pointer' }}>Cancel</button>
-          <button onClick={handleSave} style={{ height: 40, padding: '0 20px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 'bold' }}>Save</button>
+          <button onClick={handleSave} disabled={saving} style={{ height: 40, padding: '0 20px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 'bold', opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

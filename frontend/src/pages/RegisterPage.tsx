@@ -6,15 +6,17 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passError, setPassError] = useState('');
   const { register, loading, error } = useStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setPassError('Passwords do not match');
       return;
     }
+    setPassError('');
     try {
       await register(username, password);
       navigate('/');
@@ -34,6 +36,8 @@ export default function RegisterPage() {
             onChange={(e) => setUsername(e.target.value)}
             style={{ width: '100%', height: 44, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, background: '#F9FAFB', boxSizing: 'border-box' }}
             required
+            autoComplete="username"
+            minLength={2}
           />
         </div>
         <div style={{ marginBottom: 16 }}>
@@ -44,6 +48,8 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             style={{ width: '100%', height: 44, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, background: '#F9FAFB', boxSizing: 'border-box' }}
             required
+            autoComplete="new-password"
+            minLength={6}
           />
         </div>
         <div style={{ marginBottom: 24 }}>
@@ -51,13 +57,15 @@ export default function RegisterPage() {
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => { setConfirmPassword(e.target.value); setPassError(''); }}
             style={{ width: '100%', height: 44, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, background: '#F9FAFB', boxSizing: 'border-box' }}
             required
+            autoComplete="new-password"
           />
         </div>
-        {error && <p style={{ color: '#EF4444', fontSize: 14 }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ width: '100%', height: 48, background: '#3B82F6', color: '#fff', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 'bold', cursor: 'pointer' }}>
+        {passError && <p role="alert" style={{ color: '#EF4444', fontSize: 14 }}>{passError}</p>}
+        {error && <p role="alert" style={{ color: '#EF4444', fontSize: 14 }}>{error}</p>}
+        <button type="submit" disabled={loading} style={{ width: '100%', height: 48, background: '#3B82F6', color: '#fff', border: 'none', borderRadius: 8, fontSize: 16, fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1 }}>
           {loading ? 'Registering...' : 'Register'}
         </button>
       </form>

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 
 const categories = ['', 'Work', 'Personal', 'Shopping'];
@@ -9,22 +10,19 @@ const priorities = [
 ];
 
 export default function Sidebar() {
-  const { filters, setSearch, setCategory, setPriority, fetchTodos } = useStore();
+  const filters = useStore((s) => s.filters);
+  const setSearch = useStore((s) => s.setSearch);
+  const setCategory = useStore((s) => s.setCategory);
+  const setPriority = useStore((s) => s.setPriority);
+  const fetchTodos = useStore((s) => s.fetchTodos);
+  const prevFiltersRef = useRef(filters);
 
-  const handleCategoryChange = (cat: string) => {
-    setCategory(cat);
-    setTimeout(fetchTodos, 0);
-  };
-
-  const handlePriorityChange = (pri: number | null) => {
-    setPriority(pri);
-    setTimeout(fetchTodos, 0);
-  };
-
-  const handleSearchChange = (val: string) => {
-    setSearch(val);
-    setTimeout(fetchTodos, 300);
-  };
+  useEffect(() => {
+    if (JSON.stringify(prevFiltersRef.current) === JSON.stringify(filters)) return;
+    prevFiltersRef.current = filters;
+    const timer = setTimeout(fetchTodos, 300);
+    return () => clearTimeout(timer);
+  }, [filters, fetchTodos]);
 
   return (
     <div style={{ width: 220, padding: 20, background: '#fff', borderRight: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -33,7 +31,7 @@ export default function Sidebar() {
         type="text"
         placeholder="Search todos..."
         value={filters.search}
-        onChange={(e) => handleSearchChange(e.target.value)}
+        onChange={(e) => setSearch(e.target.value)}
         style={{ height: 40, padding: '0 12px', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 14, background: '#F9FAFB' }}
       />
       <div>
@@ -41,7 +39,10 @@ export default function Sidebar() {
         {categories.map((cat) => (
           <div
             key={cat || 'all'}
-            onClick={() => handleCategoryChange(cat)}
+            role="button"
+            tabIndex={0}
+            onClick={() => setCategory(cat)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCategory(cat); }}
             style={{
               padding: '4px 8px', cursor: 'pointer', borderRadius: 4, fontSize: 14,
               color: filters.category === cat ? '#3B82F6' : '#6B7280',
@@ -57,7 +58,10 @@ export default function Sidebar() {
         {priorities.map((p) => (
           <div
             key={String(p.value)}
-            onClick={() => handlePriorityChange(p.value)}
+            role="button"
+            tabIndex={0}
+            onClick={() => setPriority(p.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setPriority(p.value); }}
             style={{
               padding: '4px 8px', cursor: 'pointer', borderRadius: 4, fontSize: 14,
               color: filters.priority === p.value ? '#3B82F6' : '#6B7280',

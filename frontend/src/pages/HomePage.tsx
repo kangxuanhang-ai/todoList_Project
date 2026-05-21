@@ -6,7 +6,7 @@ import TodoList from '../components/TodoList';
 import { useStore } from '../store/useStore';
 
 export default function HomePage() {
-  const { fetchTodos } = useStore();
+  const { fetchTodos, loading } = useStore();
 
   useEffect(() => {
     fetchTodos();
@@ -17,7 +17,11 @@ export default function HomePage() {
       <Sidebar />
       <div style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
         <AddTodo />
-        <TodoList />
+        {loading ? (
+          <p style={{ textAlign: 'center', color: '#6B7280' }}>Loading...</p>
+        ) : (
+          <TodoList />
+        )}
       </div>
     </MainLayout>
   );
