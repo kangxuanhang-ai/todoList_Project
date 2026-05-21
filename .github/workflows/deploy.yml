@@ -20,5 +20,6 @@ jobs:
           script: |
             cd /root/todolist_Project
             git pull
-            docker compose build
+            docker compose build --no-cache
             docker compose up -d
+          timeout: 600s
