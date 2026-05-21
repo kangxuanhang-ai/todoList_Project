@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, case, bindparam
+from sqlalchemy import select, update, bindparam
 from app.db import get_db
 from app.models.user import User
 from app.models.todo import Todo
