@@ -1,0 +1,23 @@
+services:
+  todolist-api:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - project_default
+
+  todolist-web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    depends_on:
+      - todolist-api
+    networks:
+      - project_default
+
+networks:
+  project_default:
+    external: true
