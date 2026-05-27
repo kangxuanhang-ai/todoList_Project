@@ -1,10 +1,32 @@
 services:
+  todolist-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: todolist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - project_default
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   todolist-api:
     build: ./backend
-    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:${DB_PASSWORD:-postgres}@todolist-db:5432/todolist
+      SESSION_SECRET: ${SESSION_SECRET:-super-secret-key}
     ports:
       - "8000:8000"
     restart: unless-stopped
+    depends_on:
+      todolist-db:
+        condition: service_healthy
     networks:
       - project_default
 
@@ -17,6 +39,9 @@ services:
       - todolist-api
     networks:
       - project_default
+
+volumes:
+  pgdata:
 
 networks:
   project_default:

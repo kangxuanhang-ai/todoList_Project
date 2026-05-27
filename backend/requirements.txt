@@ -9,4 +9,4 @@ passlib[bcrypt]
 python-multipart
 itsdangerous
 pydantic-settings
-bcrypt<5
+bcrypt==4.2.1
