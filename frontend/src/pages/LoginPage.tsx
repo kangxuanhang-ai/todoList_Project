@@ -20,6 +20,7 @@ export default function LoginPage() {
     <div style={{ maxWidth: 400, margin: '100px auto', padding: 40, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
       <h1 style={{ margin: 0, fontSize: 28, color: '#1F2937' }}>Login</h1>
       <p style={{ margin: '8px 0 24px', color: '#6B7280' }}>Welcome back!</p>
+      <p style={{ margin: '0 0 16px', color: '#3B82F6', fontWeight: 'bold', textAlign: 'center' }}>康烜航</p>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: 'block', marginBottom: 4, fontSize: 14, color: '#374151' }}>Username</label>
