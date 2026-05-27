@@ -19,24 +19,14 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /root/todolist_Project
+            cd /root/todoList_Project
             git pull
 
-            # 创建 .env 文件
             cat > .env << EOF
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             SESSION_SECRET=${{ secrets.SESSION_SECRET }}
             EOF
 
-            # 停止旧容器
             docker compose down
-
-            # 构建并启动
             docker compose build
             docker compose up -d
-
-            # 等待数据库就绪
-            sleep 10
-
-            # 运行数据库迁移（如果需要）
-            docker compose exec todolist-api alembic upgrade head || true
